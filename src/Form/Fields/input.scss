@@ -1,0 +1,24 @@
+$black: #000;
+$black015: rgba($black, .15);
+$red: #d94135;
+$white: #FFFFFF;
+
+
+.react-flex-view.input {
+  margin-bottom: 16px;
+  .input {
+    background: $white !important;
+    margin: 0;
+    border: 1px solid $black015 !important;
+
+    &:focus {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    &.error {
+      border: 1px solid $red !important;
+    }
+  }
+
+}

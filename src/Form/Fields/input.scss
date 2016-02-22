@@ -12,6 +12,10 @@ $innerRadioRadius: $innerRadioWidth / 2;
 .react-flex-view.input {
   margin-bottom: 16px;
 
+  &.radio {
+    margin: 0;
+  }
+
   input {
     margin: 0;
     border: 1px solid $black015 !important;
@@ -36,6 +40,7 @@ $innerRadioRadius: $innerRadioWidth / 2;
       opacity: 1;
       border: none !important;
       background: transparent !important;
+      margin: 0 5px 0 0;
 
       &:checked {
         &:before {

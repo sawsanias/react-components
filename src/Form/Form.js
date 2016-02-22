@@ -25,9 +25,15 @@ const getInputChildren = (child) => {
   className: t.maybe(t.String),
   type: t.maybe(t.Object),
   children: t.ReactChildren,
+  onChange: t.maybe(t.Function),
   onSubmit: t.Function
 })
 export default class Form extends React.Component {
+
+  static defaultProps = {
+    onChange: () => {}
+  };
+
   constructor(props) {
     super(props);
     const inputs = flattenDeep(props.children.map(getInputChildren).filter(c => c));
@@ -110,6 +116,8 @@ export default class Form extends React.Component {
             inputChild.focus();
             inputChild.value = value;
           }
+
+          this.props.onChange(key, value);
         });
       }
     };

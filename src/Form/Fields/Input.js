@@ -104,7 +104,7 @@ export default class Input extends React.Component {
   template({ shouldRenderError, popoverProps, ...inputProps }) {
     const inputTemplate = this.templateInput(inputProps);
     return (
-      <FlexView className='input'>
+      <FlexView className={cx('input', inputProps.type)} vAlignContent='center'>
         {shouldRenderError ? (
           <Popover { ...popoverProps }>
             {inputTemplate}

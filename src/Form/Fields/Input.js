@@ -83,6 +83,7 @@ export default class Input extends React.Component {
       name,
       placeholder,
       valueLink,
+      defaultChecked,
       errorMessage
     } = inputProps;
 
@@ -95,6 +96,7 @@ export default class Input extends React.Component {
         valueLink={valueLink}
         onFocus={this.onFocus}
         onBlur={this.onBlur}
+        defaultChecked={defaultChecked}
       />
     );
   }

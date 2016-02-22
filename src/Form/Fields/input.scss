@@ -1,15 +1,21 @@
 $black: #000;
 $black015: rgba($black, .15);
 $red: #d94135;
-$white: #FFFFFF;
-
+$white: #fff;
+$outerRadioWidth: 14px;
+$outerRadioHeight: $outerRadioWidth;
+$outerRadioRadius: $outerRadioWidth / 2;
+$innerRadioWidth: 7px;
+$innerRadioHeight: 7px;
+$innerRadioRadius: $innerRadioWidth / 2;
 
 .react-flex-view.input {
   margin-bottom: 16px;
-  .input {
-    background: $white !important;
+
+  input {
     margin: 0;
     border: 1px solid $black015 !important;
+    background: $white !important;
 
     &:focus {
       outline: none !important;
@@ -19,6 +25,41 @@ $white: #FFFFFF;
     &.error {
       border: 1px solid $red !important;
     }
-  }
 
+    &[type='radio'] {
+      position: relative;
+      z-index: 1;
+      float: none;
+      width: $outerRadioWidth;
+      height: $outerRadioHeight;
+      cursor: pointer;
+      opacity: 1;
+      border: none !important;
+      background: transparent !important;
+
+      &:checked {
+        &:before {
+          position: absolute;
+          top: ($outerRadioHeight - $innerRadioHeight) / 2;
+          left: ($outerRadioWidth - $innerRadioWidth) / 2;
+          display: block;
+          width: $innerRadioWidth;
+          height: $innerRadioHeight;
+          content: '';
+          border-radius: $innerRadioRadius;
+          background: $red;
+        }
+      }
+
+      &:after {
+        display: block;
+        width: $outerRadioWidth;
+        height: $outerRadioHeight;
+        content: '';
+        border: 1px solid $black015;
+        border-radius: $outerRadioRadius;
+        background: $white;
+      }
+    }
+  }
 }

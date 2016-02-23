@@ -14,7 +14,7 @@ const InputErrorType = t.struct({
 @skinnable()
 @pure
 @props({
-  type: t.maybe(t.enums.of(['text', 'password', 'radio', 'checkbox'])),
+  type: t.maybe(t.enums.of(['text', 'email', 'password', 'radio', 'checkbox'])),
   name: t.String,
   placeholder: t.maybe(t.String),
   error: InputErrorType,

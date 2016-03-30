@@ -34,36 +34,18 @@ export default class Input extends React.Component {
     }
   }
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      focused: false
-    };
-  }
-
-  onFocus = () => {
-    this.setState({ focused: true });
-  }
-
-  onBlur = () => {
-    this.setState({ focused: false });
-  }
-
   getLocals() {
     const {
       props: {
         error,
         ...props
-      },
-      state: {
-        focused
       }
     } = this;
     const popoverProps = {
       popover: {
         position: error.position,
-        content: error.message,
-        isOpen: error.show && focused
+        content: <div>{error.message}</div>,
+        isOpen: error.show
       }
     };
 
@@ -102,7 +84,7 @@ export default class Input extends React.Component {
   template({ popoverProps, ...inputProps }) {
     const inputTemplate = this.templateInput(inputProps);
     return (
-      <FlexView className={cx('input', inputProps.type)} vAlignContent='center'>
+      <FlexView className={cx('input', inputProps.type)} vAlignContent='center' grow>
         <Popover { ...popoverProps }>
           {inputTemplate}
         </Popover>

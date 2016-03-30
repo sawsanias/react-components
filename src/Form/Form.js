@@ -1,12 +1,25 @@
 import React from 'react';
 import cx from 'classnames';
 import { props, pure, skinnable, t } from '../utils';
-import flattenDeep from 'lodash/array/flattenDeep';
-import pairs from 'lodash/object/pairs';
-import isArray from 'lodash/lang/isArray';
+import values from 'lodash/values';
+import flattenDeep from 'lodash/flattenDeep';
+import toPairs from 'lodash/toPairs';
+import isArray from 'lodash/isArray';
 import Input from './Fields/Input';
 
 import './form.scss';
+
+const InputType = t.struct({
+  type: t.Function,
+  match: t.maybe(t.struct({
+    key: t.String,
+    message: t.String
+  }, 'InputMatch'))
+}, 'InputType');
+
+const FormTypeValue = t.union([t.Function, InputType]);
+FormTypeValue.dispatch = (x) => t.Function.is(x) ? t.Function : InputType;
+const FormType = t.dict(t.String, FormTypeValue);
 
 
 const DEFAULT_ERROR_MESSAGE = 'Input is invalid.';
@@ -26,7 +39,7 @@ const getInputChildren = (child) => {
 @pure
 @props({
   className: t.maybe(t.String),
-  type: t.maybe(t.Object),
+  type: t.maybe(FormType),
   children: t.ReactChildren,
   onChange: t.maybe(t.Function),
   onSubmit: t.Function
@@ -56,24 +69,23 @@ export default class Form extends React.Component {
   }
 
   validate = () => {
-    const keysValuesPairs = pairs(this.state.values);
-    return keysValuesPairs.reduce((acc, pair) => {
-      console.log(pair[0], pair[1], this.checkInput(pair[0], pair[1]));
-      return acc && this.isInputValid(pair[0], pair[1]);
-    }, true);
+    return toPairs(this.state.values).reduce((acc, [key, value]) => {
+      acc[key] = this.checkInput(key, value);
+      return acc;
+    }, {});
   }
 
-  getInput = (key) => {
+  getInputValue = (key) => {
     return this.state.values[key];
   }
 
-  getInputType = (key) => {
+  getInput = (key) => {
     const { type } = this.props;
     if (type) {
       const { [key]: input } = type;
       if (input) {
-        if (t.Object.is(input)) {
-          return input.type;
+        if (!t.Object.is(input)) {
+          return { type: input };
         }
       }
       return input;
@@ -81,23 +93,22 @@ export default class Form extends React.Component {
     return null;
   }
 
-  isInputValid = (key, value) => {
-    const input = this.getInputType(key);
-    if (input && input.is(value)) {
-      return true;
-    }
-    return false;
-  }
-
   checkInput = (key, value) => {
-    const isInputValid = this.isInputValid(key, value);
-    if (!isInputValid) {
-      const inputType = this.getInputType(key);
-      if (inputType) {
-        if (inputType.getValidationMessage) {
-          return inputType.getValidationMessage();
+    const { match, type } = this.getInput(key);
+    if (type) {
+      if (!type.is(value)) {
+        if (type.getValidationErrorMessage) {
+          return type.getValidationErrorMessage();
         }
-        return inputType.message || DEFAULT_ERROR_MESSAGE;
+        return DEFAULT_ERROR_MESSAGE;
+      }
+    }
+    if (match) {
+      const matchingInputValue = this.getInputValue(match.key);
+      if (!!value && !!matchingInputValue) {
+        if (value !== matchingInputValue) {
+          return match.message;
+        }
       }
     }
     return null;
@@ -125,10 +136,16 @@ export default class Form extends React.Component {
 
   onSubmit = (e) => {
     e.preventDefault();
-    const isValid = this.validate();
-    if (isValid) {
-      this.props.onSubmit(e, this.state.values);
-    }
+    const errors = this.validate();
+    this.setState({
+      values: this.state.values,
+      errors
+    }, () => {
+      const errorsValues = values(errors).filter(e => !!e);
+      if (errorsValues.length === 0) {
+        this.props.onSubmit(e, this.state.values);
+      }
+    });
   }
 
   getLocals() {
@@ -157,6 +174,7 @@ export default class Form extends React.Component {
           <input {...props} />
         );
       }
+
       const inputName = props.name;
       const errorMessage = this.state.errors[inputName];
       const error = {
@@ -164,6 +182,7 @@ export default class Form extends React.Component {
         position: 'bottom',
         message: errorMessage
       };
+
       return (
         <Input {...props}
           ref={inputName}

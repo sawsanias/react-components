@@ -41,6 +41,14 @@ export default class Input extends React.Component {
     };
   }
 
+  onFocus = () => {
+    this.setState({ focused: true });
+  }
+
+  onBlur = () => {
+    this.setState({ focused: false });
+  }
+
   getLocals() {
     const {
       props: {
@@ -60,21 +68,11 @@ export default class Input extends React.Component {
     };
 
     return {
-      shouldRenderError: error.show,
       popoverProps,
       errorMessage: error.message,
       ...props
     };
   }
-
-
-  onFocus = () => {
-    this.setState({ focused: true });
-  }
-
-  onBlur = () => {
-    this.setState({ focused: false });
-  };
 
   templateInput = (inputProps) => {
     const {
@@ -101,15 +99,13 @@ export default class Input extends React.Component {
     );
   }
 
-  template({ shouldRenderError, popoverProps, ...inputProps }) {
+  template({ popoverProps, ...inputProps }) {
     const inputTemplate = this.templateInput(inputProps);
     return (
       <FlexView className={cx('input', inputProps.type)} vAlignContent='center'>
-        {shouldRenderError ? (
-          <Popover { ...popoverProps }>
-            {inputTemplate}
-          </Popover>
-        ) : inputTemplate}
+        <Popover { ...popoverProps }>
+          {inputTemplate}
+        </Popover>
       </FlexView>
     );
   }

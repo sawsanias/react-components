@@ -8,6 +8,9 @@ import Input from './Fields/Input';
 
 import './form.scss';
 
+
+const DEFAULT_ERROR_MESSAGE = 'Input is invalid.';
+
 const getInputChildren = (child) => {
   if (child.type === 'input' && child.props.type !== 'submit') {
     return child;
@@ -36,7 +39,8 @@ export default class Form extends React.Component {
 
   constructor(props) {
     super(props);
-    const inputs = flattenDeep(props.children.map(getInputChildren).filter(c => c));
+    const children = isArray(props.children) ? props.children : [props.children];
+    const inputs = flattenDeep(children.map(getInputChildren).filter(c => c));
     this.state = inputs.reduce((acc, input) => {
       const key = input.props.name;
       acc.values = {
@@ -59,6 +63,10 @@ export default class Form extends React.Component {
     }, true);
   }
 
+  getInput = (key) => {
+    return this.state.values[key];
+  }
+
   getInputType = (key) => {
     const { type } = this.props;
     if (type) {
@@ -74,7 +82,7 @@ export default class Form extends React.Component {
   }
 
   isInputValid = (key, value) => {
-    const input = this.getInput(key);
+    const input = this.getInputType(key);
     if (input && input.is(value)) {
       return true;
     }
@@ -83,13 +91,13 @@ export default class Form extends React.Component {
 
   checkInput = (key, value) => {
     const isInputValid = this.isInputValid(key, value);
-    if (isInputValid) {
+    if (!isInputValid) {
       const inputType = this.getInputType(key);
       if (inputType) {
-        if (inputType.message) {
-          return inputType.message;
+        if (inputType.getValidationMessage) {
+          return inputType.getValidationMessage();
         }
-        return inputType.getValidationMessage();
+        return inputType.message || DEFAULT_ERROR_MESSAGE;
       }
     }
     return null;
@@ -109,14 +117,6 @@ export default class Form extends React.Component {
             [key]: this.checkInput(key, value)
           }
         }, () => {
-          // TODO: find a less hacky way to accomplish this
-
-          const inputChild = React.findDOMNode(this.refs[key]).firstChild.firstChild;
-          if (inputChild) {
-            inputChild.focus();
-            inputChild.value = value;
-          }
-
           this.props.onChange(key, value);
         });
       }
@@ -149,14 +149,15 @@ export default class Form extends React.Component {
     };
   }
 
-  templateChild = (child) => {
+  templateChild = (child, key = 0) => {
+    const props = { ...child.props, key };
     if (child.type === 'input') {
       if (child.props.type === 'submit') {
         return (
-          <Input {...child.props} />
+          <input {...props} />
         );
       }
-      const inputName = child.props.name;
+      const inputName = props.name;
       const errorMessage = this.state.errors[inputName];
       const error = {
         show: !!errorMessage,
@@ -164,17 +165,17 @@ export default class Form extends React.Component {
         message: errorMessage
       };
       return (
-        <Input {...child.props}
+        <Input {...props}
           ref={inputName}
           error={error}
           valueLink={this.linkState(inputName)}
         />
       );
-    } else if (child.props && child.props.children) {
-      if (isArray(child.props.children)) {
-        return React.cloneElement(child, child.props, child.props.children.map(this.templateChild));
+    } else if (props && props.children) {
+      if (isArray(props.children)) {
+        return React.cloneElement(child, props, props.children.map(this.templateChild));
       }
-      return React.cloneElement(child, child.props, this.templateChild(child.props.children));
+      return React.cloneElement(child, props, this.templateChild(props.children));
     }
     return child;
   }
@@ -182,7 +183,7 @@ export default class Form extends React.Component {
   template({ formProps, children }) {
     return (
       <form {...formProps}>
-        {children.map(this.templateChild)}
+        {isArray(children) ? children.map(this.templateChild) : this.templateChild(children)}
       </form>
     );
   }

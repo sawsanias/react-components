@@ -31,7 +31,7 @@ const getInputChildren = (child) => {
     if (isArray(child.props.children)) {
       return child.props.children.map(getInputChildren).filter(c => c);
     }
-    return getInputChildren(child.props.children);
+    return getInputChildren(child.props.children).filter(c => c);
   }
 };
 
@@ -52,13 +52,12 @@ export default class Form extends React.Component {
 
   constructor(props) {
     super(props);
-    const children = isArray(props.children) ? props.children : [props.children];
-    const inputs = flattenDeep(children.map(getInputChildren).filter(c => c));
-    this.state = inputs.reduce((acc, input) => {
+    console.log(this.getInputs());
+    this.state = this.getInputs().reduce((acc, input) => {
       const key = input.props.name;
       acc.values = {
         ...acc.values,
-        [key]: input.props.value || null
+        [key]: input.props.defaultValue || null
       };
       acc.errors = {
         ...acc.errors,
@@ -68,7 +67,13 @@ export default class Form extends React.Component {
     }, { values: {}, errors: {} });
   }
 
-  validate = () => {
+  getInputs = () => {
+    const { children } = this.props;
+    const _children = isArray(children) ? children : [children];
+    return flattenDeep(_children.map(getInputChildren).filter(c => c));
+  }
+
+  getErrors = () => {
     return toPairs(this.state.values).reduce((acc, [key, value]) => {
       acc[key] = this.checkInput(key, value);
       return acc;
@@ -118,6 +123,7 @@ export default class Form extends React.Component {
     return {
       value: this.state.values[key],
       requestChange: (value) => {
+        const inputError = this.checkInput(key, value);
         this.setState({
           values: {
             ...this.state.values,
@@ -125,10 +131,11 @@ export default class Form extends React.Component {
           },
           errors: {
             ...this.state.errors,
-            [key]: this.checkInput(key, value)
+            [key]: inputError
           }
         }, () => {
-          this.props.onChange(key, value);
+          const hasErrors = values(this.getErrors()).filter(e => !!e).length === 0;
+          this.props.onChange(key, value, !inputError, hasErrors);
         });
       }
     };
@@ -136,14 +143,14 @@ export default class Form extends React.Component {
 
   onSubmit = (e) => {
     e.preventDefault();
-    const errors = this.validate();
+    const errors = this.getErrors();
     this.setState({
       values: this.state.values,
       errors
     }, () => {
       const errorsValues = values(errors).filter(e => !!e);
       if (errorsValues.length === 0) {
-        this.props.onSubmit(e, this.state.values);
+        this.props.onSubmit(this.state.values);
       }
     });
   }
@@ -168,7 +175,7 @@ export default class Form extends React.Component {
 
   templateChild = (child, key = 0) => {
     const props = { ...child.props, key };
-    if (child.type === 'input') {
+    if (child && child.type === 'input') {
       if (child.props.type === 'submit') {
         return (
           <input {...props} />

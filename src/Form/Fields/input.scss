@@ -36,11 +36,11 @@ $innerRadioRadius: $innerRadioWidth / 2;
       float: none;
       width: $outerRadioWidth;
       height: $outerRadioHeight;
+      margin: 0 5px 0 0;
       cursor: pointer;
       opacity: 1;
       border: none !important;
       background: transparent !important;
-      margin: 0 5px 0 0;
 
       &:checked {
         &:before {

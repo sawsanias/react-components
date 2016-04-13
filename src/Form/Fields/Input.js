@@ -56,30 +56,13 @@ export default class Input extends React.Component {
     };
   }
 
-  templateInput = (inputProps) => {
-    const {
-      className,
-      type,
-      name,
-      placeholder,
-      valueLink,
-      defaultChecked,
-      errorMessage
-    } = inputProps;
-
-    return (
-      <input
-        className={cx(className, { error: !!errorMessage })}
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        valueLink={valueLink}
-        onFocus={this.onFocus}
-        onBlur={this.onBlur}
-        defaultChecked={defaultChecked}
-      />
-    );
-  }
+  templateInput = ({ className, errorMessage, ...props }) => (
+    <input {...props}
+      className={cx(className, { error: !!errorMessage })}
+      onFocus={this.onFocus}
+      onBlur={this.onBlur}
+    />
+  );
 
   template({ popoverProps, ...inputProps }) {
     const inputTemplate = this.templateInput(inputProps);

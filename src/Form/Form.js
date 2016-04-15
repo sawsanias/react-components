@@ -31,7 +31,7 @@ const getInputChildren = (child) => {
     if (isArray(child.props.children)) {
       return child.props.children.map(getInputChildren).filter(c => c);
     }
-    return getInputChildren(child.props.children).filter(c => c);
+    return getInputChildren(child.props.children);
   }
 };
 
@@ -52,7 +52,6 @@ export default class Form extends React.Component {
 
   constructor(props) {
     super(props);
-    console.log(this.getInputs());
     this.state = this.getInputs().reduce((acc, input) => {
       const key = input.props.name;
       acc.values = {
@@ -69,8 +68,8 @@ export default class Form extends React.Component {
 
   getInputs = () => {
     const { children } = this.props;
-    const _children = isArray(children) ? children : [children];
-    return flattenDeep(_children.map(getInputChildren).filter(c => c));
+    const inputs = (isArray(children) ? children : [children]).filter(c => c).map(getInputChildren);
+    return flattenDeep(inputs).filter(c => c);
   }
 
   getErrors = () => {
@@ -174,36 +173,38 @@ export default class Form extends React.Component {
   }
 
   templateChild = (child, key = 0) => {
-    const props = { ...child.props, key };
-    if (child && child.type === 'input') {
-      if (child.props.type === 'submit') {
+    if (child) {
+      const props = { ...child.props, key };
+      if (child && child.type === 'input') {
+        if (child.props.type === 'submit') {
+          return (
+            <input {...props} />
+          );
+        }
+
+        const inputName = props.name;
+        const errorMessage = this.state.errors[inputName];
+        const error = {
+          show: !!errorMessage,
+          position: 'bottom',
+          message: errorMessage
+        };
+
         return (
-          <input {...props} />
+          <Input {...props}
+            ref={inputName}
+            error={error}
+            valueLink={this.linkState(inputName)}
+          />
         );
+      } else if (props && props.children) {
+        if (isArray(props.children)) {
+          return React.cloneElement(child, props, props.children.map(this.templateChild));
+        }
+        return React.cloneElement(child, props, this.templateChild(props.children));
       }
-
-      const inputName = props.name;
-      const errorMessage = this.state.errors[inputName];
-      const error = {
-        show: !!errorMessage,
-        position: 'bottom',
-        message: errorMessage
-      };
-
-      return (
-        <Input {...props}
-          ref={inputName}
-          error={error}
-          valueLink={this.linkState(inputName)}
-        />
-      );
-    } else if (props && props.children) {
-      if (isArray(props.children)) {
-        return React.cloneElement(child, props, props.children.map(this.templateChild));
-      }
-      return React.cloneElement(child, props, this.templateChild(props.children));
+      return child;
     }
-    return child;
   }
 
   template({ formProps, children }) {

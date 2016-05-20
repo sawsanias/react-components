@@ -7,13 +7,13 @@ import cx from 'classnames';
 import { warn } from '../utils/log';
 
 const PropTypes = {
-  value: t.maybe(t.union([t.Number, t.String, t.Object])),
+  value: t.maybe(t.union([t.Number, t.String, t.Object, t.list(t.Object)])),
   valueLink: t.maybe(t.struct({
-    value: t.maybe(t.union([t.Number, t.String, t.Object])),
+    value: t.maybe(t.union([t.Number, t.String, t.Object, t.list(t.Object)])),
     requestChange: t.Function
   })),
   onChange: t.maybe(t.Function),
-  options: t.Array,
+  options: t.list(t.Object),
   size: t.enums.of(['medium', 'small']),
   disabled: t.maybe(t.Boolean),
   searchable: t.maybe(t.Boolean),
@@ -31,6 +31,7 @@ const PropTypes = {
 export default class Dropdown extends React.Component {
 
   static defaultProps = {
+    delimiter: ',',
     size: 'medium',
     disabled: false,
     searchable: false,
@@ -55,6 +56,11 @@ export default class Dropdown extends React.Component {
 
   valueToOption = (value, options) => {
     if (t.String.is(value) || t.Number.is(value)) {
+      const { multi, delimiter } = this.props;
+      if (multi) {
+        const values = String(value).split(delimiter);
+        return values.map(v => find(options, { value: v }));
+      }
       return find(options, { value });
     }
     return value;

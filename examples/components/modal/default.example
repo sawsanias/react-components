@@ -1,0 +1,17 @@
+
+class Example extends React.Component {
+
+  onDismiss = (cs) => {
+    console.log(cs);
+  }
+
+  render() {
+    return (
+      <Modal dismissOnClickOut
+        onDismiss={(e) => { log('e', e);}}
+      >
+        <button>My button</button>
+      </Modal>
+    );
+  }
+}

@@ -14,6 +14,8 @@ $scrollbar-color: rgba(gray, .6) !default;
 $hover-scrollbar-background: rgba(white, .8) !default;
 $hover-scrollbar-color: white !default;
 
+$scrollbar-size: 15px !default;
+
 .fixed-data-table-wrapper {
 
   // whole table
@@ -72,8 +74,23 @@ $hover-scrollbar-color: white !default;
 
   // scrollbar
   .public_Scrollbar_main {
+    &.ScrollbarLayout_mainHorizontal {
+      height: $scrollbar-size;
+    }
+    &.ScrollbarLayout_mainVertical {
+      width: $scrollbar-size;
+    }
+    .ScrollbarLayout_faceHorizontal:after {
+      top: 0;
+      bottom: 0;
+    }
+    .ScrollbarLayout_faceVertical:after {
+      left: 0;
+      right: 0;
+    }
     .public_Scrollbar_face:after {
       background-color: $scrollbar-color;
+      cursor: pointer;
     }
     .public_Scrollbar_face:hover:after {
       background-color: $hover-scrollbar-color;

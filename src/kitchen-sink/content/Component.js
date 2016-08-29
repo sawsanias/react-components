@@ -27,7 +27,7 @@ export default class Component extends React.Component {
       <div className='example' key={key}>
         {example.title && <Markdown source={`## ${example.title}`} options={{ html: true }} />}
         {example.description && <Markdown source={example.description} options={{ html: true }} />}
-        <ExampleCard {...{ codeText: example.code, iso, scope }} />
+        <ExampleCard {...{ codeText: example, iso, scope }} />
       </div>);
   };
 

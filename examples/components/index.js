@@ -5,7 +5,7 @@ import './styles';
 const json = JSON.parse(examplesJSON);
 
 function dynamicRequire(e) {
-  const path = e.match(/src\/(.+)\/examples\/(.+).js/)[0];
+  const path = e.url.match(/src\/(.+)\/examples\/(.+).js/)[0];
   return require(`raw!../../${path}`);
 }
 
